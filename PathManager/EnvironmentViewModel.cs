@@ -90,7 +90,7 @@ namespace PathManager
 				});
 		}
 
-		private static IObservable<int> GetPathLimit()
+		private static async Task<int> GetPathLimit()
 		{
 			var startInfo = new ProcessStartInfo("wmic", "qfe get hotfixid")
 			{
@@ -98,11 +98,14 @@ namespace PathManager
 				RedirectStandardOutput = true
 			};
 
-			var process = Process.Start(startInfo);
-
-			return Observable.FromAsync(process.StandardOutput.ReadLineAsync)
-				.Any()
-				.Select(found => found ? 4095 : 2047); // Check http://support.microsoft.com/kb/2685893 for these constants.
+			using (var process = Process.Start(startInfo))
+			{
+				var result = await process.StandardOutput.ReadToEndAsync();
+				return result.Split('\n')
+					.Any(line => line.StartsWith("KB2685893"))
+					? 4095
+					: 2047; // Check http://support.microsoft.com/kb/2685893 for these constants.
+			}
 		}
 
 		private void Refresh()
@@ -113,7 +116,7 @@ namespace PathManager
 
 			Paths = new ObservableCollection<PathViewModel>(userPaths.Concat(systemPaths));
 			PathSize = size;
-			GetPathLimit().Subscribe(limit => PathLimit = limit);
+			Observable.FromAsync(GetPathLimit).Subscribe(limit => PathLimit = limit);
 		}
 	}
 }
