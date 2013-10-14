@@ -92,7 +92,7 @@ namespace PathManager
 
 		private static async Task<int> GetPathLimit()
 		{
-			var startInfo = new ProcessStartInfo("wmic", "qfe get hotfixid")
+			var startInfo = new ProcessStartInfo("wmic", "qfe get hotfixid") // TODO: Replace with something better.
 			{
 				UseShellExecute = false,
 				RedirectStandardOutput = true
