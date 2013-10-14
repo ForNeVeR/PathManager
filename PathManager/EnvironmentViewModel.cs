@@ -100,11 +100,17 @@ namespace PathManager
 
 			using (var process = Process.Start(startInfo))
 			{
-				var result = await process.StandardOutput.ReadToEndAsync();
-				return result.Split('\n')
-					.Any(line => line.StartsWith("KB2685893"))
-					? 4095
-					: 2047; // Check http://support.microsoft.com/kb/2685893 for these constants.
+				string line;
+				do
+				{
+					line = await process.StandardOutput.ReadLineAsync();
+					if (line != null && line.TrimEnd() == "KB2685893")
+					{
+						return 4095; // Check http://support.microsoft.com/kb/2685893 for these constants.
+					}
+				} while (line != null);
+				
+				return 2047;
 			}
 		}
 
