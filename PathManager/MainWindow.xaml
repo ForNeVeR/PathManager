@@ -4,12 +4,13 @@
         xmlns:local="clr-namespace:PathManager"
         Title="MainWindow" Height="350" Width="525">
     <Window.DataContext>
-        <local:EnvironmentViewModel/>
+        <local:EnvironmentViewModel />
     </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <ListBox
             Grid.Row="0"
@@ -17,15 +18,23 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
-                        <TextBox Text="{Binding Path}"/>
-                        <Label Content="{Binding ChangedText}"/>
+                        <TextBox Text="{Binding Path}" />
+                        <Label Content="{Binding ChangedText}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <TextBlock Grid.Row="1">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}Path length: {0} of {1} max">
+                    <Binding Path="PathSize" />
+                    <Binding Path="PathLimit" />
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
         <Button
-            Grid.Row="1"
+            Grid.Row="2"
             Command="{Binding RefreshCommand}"
-            Content="Refresh"/>
+            Content="Refresh" />
     </Grid>
 </Window>
