@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using ReactiveUI;
 
@@ -14,6 +13,8 @@ namespace PathManager
 	public class EnvironmentViewModel : ReactiveObject
 	{
 		private const string PathVariable = "PATH";
+
+		private readonly Lazy<Task<int>> _pathLimitSource = new Lazy<Task<int>>(GetPathLimit);
 
 		private ObservableCollection<PathViewModel> _paths;
 		private int _pathSize;
@@ -94,6 +95,7 @@ namespace PathManager
 		{
 			var startInfo = new ProcessStartInfo("wmic", "qfe get hotfixid") // TODO: Replace with something better.
 			{
+				CreateNoWindow = true,
 				UseShellExecute = false,
 				RedirectStandardOutput = true
 			};
@@ -122,7 +124,9 @@ namespace PathManager
 
 			Paths = new ObservableCollection<PathViewModel>(userPaths.Concat(systemPaths));
 			PathSize = size;
-			Observable.FromAsync(GetPathLimit).Subscribe(limit => PathLimit = limit);
+
+			// PathLimit cannot be changed without system reboot, so we currently may refresh it only once a session.
+			Observable.FromAsync(() => _pathLimitSource.Value).Subscribe(limit => PathLimit = limit);
 		}
 	}
 }
