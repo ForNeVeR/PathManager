@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 using ReactiveUI;
 
 namespace PathManager
@@ -23,7 +24,11 @@ namespace PathManager
 		public EnvironmentViewModel()
 		{
 			RefreshCommand = new ReactiveCommand();
-			RefreshCommand.Subscribe(_ => Refresh());
+			var settingsChanged = Observable.FromEventPattern<UserPreferenceChangedEventHandler, UserPreferenceChangedEventArgs>(
+				x => SystemEvents.UserPreferenceChanged += x,
+				x => SystemEvents.UserPreferenceChanged -= x);
+
+			RefreshCommand.Merge(settingsChanged).Subscribe(_ => Refresh());
 		}
 
 		public ReactiveCommand RefreshCommand
