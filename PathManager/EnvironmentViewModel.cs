@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Microsoft.Win32;
-using ReactiveUI;
 
 namespace PathManager
 {
@@ -96,29 +95,10 @@ namespace PathManager
 				});
 		}
 
-		private static async Task<int> GetPathLimit()
+		private static Task<int> GetPathLimit()
 		{
-			var startInfo = new ProcessStartInfo("wmic", "qfe get hotfixid") // TODO: Replace with something better.
-			{
-				CreateNoWindow = true,
-				UseShellExecute = false,
-				RedirectStandardOutput = true
-			};
-
-			using (var process = Process.Start(startInfo))
-			{
-				string line;
-				do
-				{
-					line = await process.StandardOutput.ReadLineAsync();
-					if (line != null && line.TrimEnd() == "KB2685893")
-					{
-						return 4095; // Check http://support.microsoft.com/kb/2685893 for these constants.
-					}
-				} while (line != null);
-				
-				return 2047;
-			}
+            // Check http://support.microsoft.com/kb/2685893 for these constants.
+            return Task.Factory.StartNew(() => Wmi.IsUpdateInstalled("KB2685893") ? 4095 : 2047);
 		}
 
 		private void Refresh()
